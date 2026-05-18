@@ -1,0 +1,88 @@
+================================================================================
+                    LOGIQUE GLOBALE ET ARCHITECTURE DU PROJET
+================================================================================
+
+1. PRÉSENTATION DU SYSTÈME
+--------------------------------------------------------------------------------
+Ce projet est un système ERP (Enterprise Resource Planning) complet de gestion 
+commerciale, industrielle et logistique développé sous Laravel. 
+Sa particularité réside dans sa transition architecturale : le projet migre d'anciennes 
+"Vues SQL" (lourdes et rigides dans la base de données) vers une logique applicative 
+"Fluent Query Builder" encapsulée dans des classes Services indépendantes. 
+
+Cette approche permet de centraliser la logique métier, d'appliquer des filtres 
+dynamiques (comme les dates ou les statuts) et de garantir de hautes performances 
+sans surcharger le serveur de base de données.
+
+
+2. ARCHITECTURE TECHNIQUE ET TRAITEMENT DES DONNÉES
+--------------------------------------------------------------------------------
+Le projet applique le principe de responsabilité unique à travers plusieurs couches :
+- Les Modèles (Models) : Représentent les tables physiques brutes de la base de données.
+- Les Services (Services) : Contiennent le Query Builder complexe. Ils exécutent 
+  les calculs, les liaisons (Joins) et les unifications (Unions) à la volée.
+- Les Contrôleurs (Controllers) : Capturent les requêtes HTTP, transmettent les filtres 
+  aux services, et retournent des réponses standardisées (généralement en JSON pour une API).
+
+
+3. DESCRIPTION DES MODULES ET FLUX MÉTIER (LOGIQUE PAR SERVICE)
+--------------------------------------------------------------------------------
+
+A. GESTION DES VENTES (VenteService)
+- Gère le flux complet sortant des marchandises : Commandes clients (Order Output), 
+  Bons de Livraison (BL / vente_livraison) et Factures de vente.
+- Gère les retours de marchandises via les Avoirs Clients (AV / vente_avoir).
+- Logique clé : Il fusionne dynamiquement les livraisons (positives) et les avoirs 
+  (négatifs) pour obtenir une situation en temps réel du chiffre d'affaires et des 
+  quantités vendues par article.
+
+B. GESTION DES ACHATS ET FOURNISSEURS (AchatService)
+- Gère le flux entrant des marchandises : Commandes d'achat, Bons de Réception 
+  (achat_reception) et Factures fournisseurs.
+- Intègre la gestion des Avoirs Fournisseurs pour les retours de marchandises.
+- Assure le suivi des règlements émis vers les fournisseurs.
+
+C. COMPTABILITÉ ET FINANCES (FinanceService)
+- Centralise les écritures financières de l'entreprise.
+- Croise les règlements clients validés (`vente_reglements_client`) avec les modes 
+  de paiement (Espèces, Chèque, Effet, Virement) et les banques concernées.
+- Calcule en temps réel le "Reste à payer" (`open_price`) sur chaque facture ou 
+  bon de livraison en soustrayant le montant payé (`PAYED`) et les remises appliquées (`Rebate`).
+
+D. ANALYTIQUE ET BUSINESS INTELLIGENCE (AnalyticService)
+- C'est le tableau de bord décisionnel de l'application.
+- Il consomme les requêtes des autres services pour générer des statistiques avancées :
+  * Analyse globale des articles (Entrées VS Sorties).
+  * Top Ventes (Classement des produits les plus performants).
+  * Analyse des écarts et des marges bénéficiaires nettes.
+
+E. LOGISTIQUE ET TRANSPORTS (TransportService)
+- Planification et suivi des expéditions de marchandises.
+- Associe chaque rotation ou livraison à un Véhicule (Matricule, Modèle), un Trajet 
+  (Départ, Arrivée), le Poids transporté, et gère l'affectation des conducteurs 
+  (Conducteur 1 et Conducteur 2).
+
+F. STOCKS ET PRODUCTION (ProductService, StockService, ServiceProduction)
+- StockService / ProductService : Suivent l'état des inventaires par Dépôt physique. 
+  Ils gèrent le stock initial, les mouvements de stock et les seuils d'alerte.
+- ServiceProduction : Encadre la transformation industrielle (Usine / Fabrication). 
+  Il comptabilise les matières premières consommées (is_materials) et suit la 
+  création des produits finis manufacturés (is_manufactured).
+
+G. ADMINISTRATION ET CHARGES (AdministrationService)
+- Gère la configuration de l'entreprise, le provisioning et les droits des Utilisateurs.
+- Centralise le suivi des charges d'exploitation de l'entreprise (Frais fixes, loyers, 
+  salaires, électricité) classées par catégories et familles de charges.
+
+
+4. RÈGLES MÉTIER ET CALCULS CRITIQUES DU SYSTÈME
+--------------------------------------------------------------------------------
+- Calcul du Reste à Payer (Open Price) : 
+  Pour les ventes : `Montant Total TTC - Montant Payé`
+  Pour les avoirs (valeurs négatives) : `(- Montant Total + Montant Payé)`
+- Validation stricte : Les écritures financières et les mouvements de stock ne sont 
+  comptabilisés dans les rapports analytiques que si les drapeaux de validation 
+  (`VALIDATION = 1` ou `validate = 1`) sont actifs. Cela évite d'inclure des brouillons.
+- Optimisation des Unions : L'utilisation de `toSql()` combiné à `mergeBindings()` 
+  permet de faire des structures `UNION` massives en base de données de manière 
+  totalement sécurisée contre les injections SQL.
