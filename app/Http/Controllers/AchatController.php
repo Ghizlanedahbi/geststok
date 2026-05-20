@@ -49,7 +49,7 @@ class AchatController extends Controller
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
-
+//
     public function indexViewAchatReception(Request $request): JsonResponse
     {
         try {
