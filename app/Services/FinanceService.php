@@ -96,7 +96,7 @@ class FinanceService
             ])
             ->join('vente_client as c', 'c.CLIENT_ID', '=', 'a.CLIENT_ID');
 
-        // Étape C : Union stable des deux segments d'opérations
+        /// Étape C : Union stable des deux segments d'opérations
         $unionQuery = $livraisonsQuery->union($avoirsQuery);
 
         // Étape D : Sélection finale paginée
