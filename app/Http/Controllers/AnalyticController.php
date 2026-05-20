@@ -6,6 +6,7 @@ use App\Services\AnalyticService;
 use App\Services\AchatService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 use Exception;
 
 class AnalyticController extends Controller
@@ -31,8 +32,9 @@ class AnalyticController extends Controller
         try {
             $startDate = $request->query('startDate');
             $endDate = $request->query('endDate');
+            $perPage = $request->query('perPage', 15);
 
-            $data = $this->analyticService->getArticleAnalysis($startDate, $endDate);
+            $data = $this->analyticService->getArticleAnalysis($startDate, $endDate, $perPage);
 
             return response()->json([
                 'success' => true,
@@ -50,43 +52,17 @@ class AnalyticController extends Controller
     }
 
     /**
-     * GET /api/analytic/article-analysis-delevered
-     * Analyse des articles livrés / expédiés
-     */
-    public function articleAnalysisDelevered(Request $request): JsonResponse
-    {
-        try {
-            $startDate = $request->query('startDate');
-            $endDate = $request->query('endDate');
-
-            $data = $this->analyticService->getArticleAnalysisDelevered($startDate, $endDate);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Analyse des articles livrés récupérée avec succès.',
-                'data'    => $data
-            ], 200);
-
-        } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors de l\'analyse des articles livrés.',
-                'error'   => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
      * GET /api/analytic/article-analysis-sales
-     * Analyse détaillée des ventes d'articles
+     * Analyse détaillée des ventes d'articles (Filtres dates + Clients)
      */
     public function articleAnalysisSales(Request $request): JsonResponse
     {
         try {
             $startDate = $request->query('startDate');
             $endDate = $request->query('endDate');
+            $perPage = $request->query('perPage', 15);
 
-            $data = $this->analyticService->getArticleAnalysisSales($startDate, $endDate);
+            $data = $this->analyticService->getArticleAnalysisSales($startDate, $endDate, $perPage);
 
             return response()->json([
                 'success' => true,
@@ -97,7 +73,7 @@ class AnalyticController extends Controller
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur lors de l\'analyse des ventes.',
+                'message' => 'Erreur lors de l\'analyse des ventes d\'articles.',
                 'error'   => $e->getMessage()
             ], 500);
         }
@@ -105,16 +81,17 @@ class AnalyticController extends Controller
 
     /**
      * GET /api/analytic/article-analysis-shopping
-     * Analyse des achats et réceptions d'articles (Fait appel à AchatService)
+     * Analyse détaillée des achats d'articles
      */
     public function articleAnalysisShopping(Request $request): JsonResponse
     {
         try {
             $startDate = $request->query('startDate');
             $endDate = $request->query('endDate');
+            $perPage = $request->query('perPage', 15);
 
-            // Récupère l'analyse shopping optimisée sans vue SQL brute depuis AchatService
-            $data = $this->achatService->getViewArticleAnalysisShopping($startDate, $endDate);
+            // Appel au service externe AchatService en y passant le paramètre perPage
+            $data = $this->achatService->getViewArticleAnalysisShopping($startDate, $endDate, $perPage);
 
             return response()->json([
                 'success' => true,
@@ -138,10 +115,12 @@ class AnalyticController extends Controller
     public function stockProduitTopSales(Request $request): JsonResponse
     {
         try {
-            // Par défaut, prend le Top 10 si aucune limite n'est passée
+            // Limite globale du classement (Top 10 par défaut)
             $limit = $request->query('limit', 10);
+            // Nombre d'éléments par page (15 par défaut)
+            $perPage = $request->query('perPage', 15);
 
-            $data = $this->analyticService->getStockProduitTopSales($limit);
+            $data = $this->analyticService->getStockProduitTopSales($limit, $perPage);
 
             return response()->json([
                 'success' => true,

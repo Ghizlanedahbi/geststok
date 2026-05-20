@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Stock;
 use App\Models\StockProduit;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class StockService
 {
@@ -12,7 +13,7 @@ class StockService
      * VIEW_STOCK1
      * Liste détaillée et historique des mouvements avec libellé du dépôt.
      */
-    public function getViewStock1()
+    public function getViewStock1(int $perPage = 15): LengthAwarePaginator
     {
         return Stock::query()
             ->from('stock as s')
@@ -28,14 +29,14 @@ class StockService
                 's.lineId', 's.RefType', 's.MOVE_TYPE_ID as move_type_id', 's.DATE_EXPIRY'
             ])
             ->join('stock_depot as d', 'd.DEPOT_ID', '=', 's.DEPOT_ID')
-            ->get();
+            ->paginate($perPage);
     }
 
     /**
      * VIEW_STOCK_MANAGED_KERNEL
      * Catalogue complet incluant catégories, familles et prix calculés.
      */
-    public function getViewStockManagedKernel()
+    public function getViewStockManagedKernel(int $perPage = 15): LengthAwarePaginator
     {
         return StockProduit::query()
             ->from('stock_quantities as s')
@@ -56,14 +57,14 @@ class StockService
             ->join('stock_produits_categorie as c', 'c.CATEGORIE_ID', '=', 'p.CATEGORIE_ID')
             ->leftJoin('stock_produits_categorie_famille as fm', 'fm.ID', '=', 'p.FAMILLE_ID')
             ->join('stock_depot as d', 'd.DEPOT_ID', '=', 's.depot_id')
-            ->get();
+            ->paginate($perPage);
     }
 
     /**
      * VIEW_STOCK_NEW
      * Consolidation avec jointure gauche pour assurer l'affichage des stocks orphelins.
      */
-    public function getViewStockNew()
+    public function getViewStockNew(int $perPage = 15): LengthAwarePaginator
     {
         return Stock::query()
             ->from('stock')
@@ -84,14 +85,14 @@ class StockService
                 'stock_produit.STOCK_SEUIL', 'stock_produit.INVENTORIE', 'stock.DEPOT_ID',
                 'stock.DEPOT_NOM', 'stock.FOURNISSEUR_ID', 'stock.FOURNISSEUR_NOM', 'stock.STATUT_ID'
             ])
-            ->get();
+            ->paginate($perPage);
     }
 
     /**
      * VIEW_STOCK_QUANTITE
      * État des quantités simplifié (IDs uniquement pour Unités et Dépôts).
      */
-    public function getViewStockQuantite()
+    public function getViewStockQuantite(int $perPage = 15): LengthAwarePaginator
     {
         return StockProduit::query()
             ->from('stock_produit')
@@ -109,14 +110,14 @@ class StockService
                 'stock_produit.FRAIS_DIVERS', 'stock_produit.MARGE', 'stock_produit.PRIX_VENTE',
                 'stock_produit.STOCK_SEUIL', 'stock.DEPOT_ID', 'stock.UNITE_ID'
             ])
-            ->get();
+            ->paginate($perPage);
     }
 
     /**
      * VIEW_STOCK_DETAIL
      * Version complète avec noms des fournisseurs et statuts.
      */
-    public function getViewStockDetail()
+    public function getViewStockDetail(int $perPage = 15): LengthAwarePaginator
     {
         return StockProduit::query()
             ->from('stock_produit')
@@ -139,14 +140,14 @@ class StockService
                 'stock.DEPOT_NOM', 'stock.UNITE', 'stock.FOURNISSEUR_ID', 'stock.FOURNISSEUR_NOM',
                 'stock.STOCK_ID', 'stock.SATATUT'
             ])
-            ->get();
+            ->paginate($perPage);
     }
 
     /**
      * VIEW_STOCK_MANAGED
      * Consolidation technique brute par dimensions clés.
      */
-    public function getViewStockManaged()
+    public function getViewStockManaged(int $perPage = 15): LengthAwarePaginator
     {
         return Stock::query()
             ->select([
@@ -154,14 +155,14 @@ class StockService
                 'PRIX_ACHAT as StockPRIX_ACHAT', DB::raw('SUM(QUANTITE) as Quantité')
             ])
             ->groupBy(['PRODUIT_ID', 'DEPOT_ID', 'UNITE_ID', 'STATUT_ID', 'FOURNISSEUR_ID', 'PRIX_ACHAT'])
-            ->get();
+            ->paginate($perPage);
     }
 
     /**
      * VIEW_STOCK_CLASSEDBYKEYS
-     * Filtrage spécifique sur le produit ID 7420 (Défaut).
+     * Filtrage spécifique sur le produit ID (7420 par défaut).
      */
-    public function getViewStockClassedByKeys($produitId = 7420)
+    public function getViewStockClassedByKeys($produitId = 7420, int $perPage = 15): LengthAwarePaginator
     {
         return Stock::query()
             ->select([
@@ -170,18 +171,18 @@ class StockService
             ])
             ->where('PRODUIT_ID', '=', $produitId)
             ->groupBy(['PRODUIT_ID', 'DEPOT_ID', 'UNITE_ID', 'STATUT_ID', 'FOURNISSEUR_ID', 'PRIX_ACHAT'])
-            ->get();
+            ->paginate($perPage);
     }
 
     /**
      * VIEW_STOCK_BY_DEPOSIT
      * Somme simplifiée des stocks par Dépôt.
      */
-    public function getViewStockByDeposit()
+    public function getViewStockByDeposit(int $perPage = 15): LengthAwarePaginator
     {
         return Stock::query()
             ->select(['PRODUIT_ID', 'DEPOT_ID', DB::raw('SUM(QUANTITE) as total_quantite')])
             ->groupBy(['PRODUIT_ID', 'DEPOT_ID'])
-            ->get();
+            ->paginate($perPage);
     }
 }

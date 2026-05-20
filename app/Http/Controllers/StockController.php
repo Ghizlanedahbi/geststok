@@ -6,6 +6,7 @@ use App\Services\StockService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Exception;
 
 class StockController extends Controller
 {
@@ -20,59 +21,120 @@ class StockController extends Controller
     }
 
     /**
+     * Fonction interne pour standardiser l'enveloppe JSON des résultats paginés
+     */
+    private function paginatedResponse($paginator): JsonResponse
+    {
+        return response()->json([
+            'success'    => true,
+            'data'       => $paginator->items(),
+            'pagination' => [
+                'total'         => $paginator->total(),
+                'per_page'      => $paginator->perPage(),
+                'current_page'  => $paginator->currentPage(),
+                'last_page'     => $paginator->lastPage(),
+                'next_page_url' => $paginator->nextPageUrl(),
+                'prev_page_url' => $paginator->previousPageUrl(),
+            ]
+        ], 200);
+    }
+
+    /**
      * Historique et mouvements détaillés (Vue: view_stock1)
      */
-    public function indexStock1(): JsonResponse
+    public function indexStock1(Request $request): JsonResponse
     {
-        return response()->json($this->stockService->getViewStock1());
+        try {
+            $perPage = $request->query('perPage', 15);
+            $paginator = $this->stockService->getViewStock1((int)$perPage);
+            return $this->paginatedResponse($paginator);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
     }
 
     /**
      * Noyau du stock : Catalogue, Catégories, Familles (Vue: view_stock_managed_kernel)
      */
-    public function indexStockKernel(): JsonResponse
+    public function indexStockKernel(Request $request): JsonResponse
     {
-        return response()->json($this->stockService->getViewStockManagedKernel());
+        try {
+            $perPage = $request->query('perPage', 15);
+            $paginator = $this->stockService->getViewStockManagedKernel((int)$perPage);
+            return $this->paginatedResponse($paginator);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
     }
 
     /**
      * État du stock consolidé avec jointures gauches (Vue: view_stock_new)
      */
-    public function indexStockNew(): JsonResponse
+    public function indexStockNew(Request $request): JsonResponse
     {
-        return response()->json($this->stockService->getViewStockNew());
+        try {
+            $perPage = $request->query('perPage', 15);
+            $paginator = $this->stockService->getViewStockNew((int)$perPage);
+            return $this->paginatedResponse($paginator);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
     }
 
     /**
      * Quantités agrégées par produit et dépôt sans noms (Vue: view_stock_quantite)
      */
-    public function indexStockQuantite(): JsonResponse
+    public function indexStockQuantite(Request $request): JsonResponse
     {
-        return response()->json($this->stockService->getViewStockQuantite());
+        try {
+            $perPage = $request->query('perPage', 15);
+            $paginator = $this->stockService->getViewStockQuantite((int)$perPage);
+            return $this->paginatedResponse($paginator);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
     }
 
     /**
      * Détails complets incluant fournisseurs et statuts (Vue: view_stock_detail)
      */
-    public function indexStockDetail(): JsonResponse
+    public function indexStockDetail(Request $request): JsonResponse
     {
-        return response()->json($this->stockService->getViewStockDetail());
+        try {
+            $perPage = $request->query('perPage', 15);
+            $paginator = $this->stockService->getViewStockDetail((int)$perPage);
+            return $this->paginatedResponse($paginator);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
     }
 
     /**
      * Consolidation technique brute (Vue: view_stock_managed)
      */
-    public function indexStockManaged(): JsonResponse
+    public function indexStockManaged(Request $request): JsonResponse
     {
-        return response()->json($this->stockService->getViewStockManaged());
+        try {
+            $perPage = $request->query('perPage', 15);
+            $paginator = $this->stockService->getViewStockManaged((int)$perPage);
+            return $this->paginatedResponse($paginator);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
     }
 
     /**
      * Stock groupé par dépôt uniquement (Vue: view_stock_by_deposit)
      */
-    public function indexStockByDeposit(): JsonResponse
+    public function indexStockByDeposit(Request $request): JsonResponse
     {
-        return response()->json($this->stockService->getViewStockByDeposit());
+        try {
+            $perPage = $request->query('perPage', 15);
+            $paginator = $this->stockService->getViewStockByDeposit((int)$perPage);
+            return $this->paginatedResponse($paginator);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -80,8 +142,13 @@ class StockController extends Controller
      */
     public function indexStockClassedByKeys(Request $request): JsonResponse
     {
-        // On récupère l'ID 7420 par défaut si aucun ID n'est fourni dans l'URL
-        $produitId = $request->query('produit_id', 7420);
-        return response()->json($this->stockService->getViewStockClassedByKeys($produitId));
+        try {
+            $produitId = $request->query('produit_id', 7420);
+            $perPage = $request->query('perPage', 15);
+            $paginator = $this->stockService->getViewStockClassedByKeys($produitId, (int)$perPage);
+            return $this->paginatedResponse($paginator);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
     }
 }

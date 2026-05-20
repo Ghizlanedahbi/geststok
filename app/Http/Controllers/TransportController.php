@@ -20,48 +20,49 @@ class TransportController extends Controller
     }
 
     /**
-     * Liste globale des ordres de transport (Vue: view_transport_order_details)
-     * Regroupe responsables, conducteurs, véhicules et trajets.
+     * Liste globale des ordres de transport (Paginée)
      */
-    public function indexOrders(): JsonResponse
+    public function indexOrders(Request $request): JsonResponse
     {
-        return response()->json($this->transportService->getViewTransportOrderDetails());
+        $perPage = $request->query('perPage', 15);
+        return response()->json($this->transportService->getViewTransportOrderDetails($perPage));
     }
 
     /**
-     * Liste des locations par client avec filtres (Vue: view_transport_order_locations)
-     * Filtres possibles via URL: client_id, date_debut, date_fin
+     * Liste des locations par client avec filtres (Paginée)
      */
     public function indexOrderLocations(Request $request): JsonResponse
     {
         $clientId  = $request->query('client_id');
         $dateDebut = $request->query('date_debut');
         $dateFin   = $request->query('date_fin');
+        $perPage   = $request->query('perPage', 15);
 
         $data = $this->transportService->getViewTransportOrderLocations(
             $clientId ? (int)$clientId : null,
             $dateDebut,
-            $dateFin
+            $dateFin,
+            $perPage
         );
 
         return response()->json($data);
     }
 
     /**
-     * Détails étendus des locations (Vue: view_transport_location_client)
-     * Inclut les matricules véhicules et les deux conducteurs.
+     * Détails étendus des locations (Paginée)
      */
-    public function indexLocationClient(): JsonResponse
+    public function indexLocationClient(Request $request): JsonResponse
     {
-        return response()->json($this->transportService->getViewTransportLocationClient());
+        $perPage = $request->query('perPage', 15);
+        return response()->json($this->transportService->getViewTransportLocationClient($perPage));
     }
 
     /**
-     * Historique ligne par ligne (Vue: view_transport_details_line_by_line)
-     * Basé sur l'UNION des Commandes, Livraisons, Personnel et Locations.
+     * Historique ligne par ligne sans vue SQL (Paginée)
      */
-    public function indexLineDetails(): JsonResponse
+    public function indexLineDetails(Request $request): JsonResponse
     {
-        return response()->json($this->transportService->getViewTransportDetailsLineByLine());
+        $perPage = $request->query('perPage', 15);
+        return response()->json($this->transportService->getViewTransportDetailsLineByLine($perPage));
     }
 }

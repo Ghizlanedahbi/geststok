@@ -22,12 +22,15 @@ class FinanceController extends Controller
 
     /**
      * GET /api/finance/reglements-livraisons
-     * Récupère la liste des règlements appliqués aux livraisons (avec remises et banques)
+     * Récupère la liste des règlements appliqués aux livraisons (Paginée)
      */
-    public function getReglementLivraisonRemise(): JsonResponse
+    public function getReglementLivraisonRemise(Request $request): JsonResponse
     {
         try {
-            $data = $this->financeService->getViewReglementLivraisonRemise();
+            // Récupère la valeur de 'perPage', par défaut à 15
+            $perPage = $request->query('perPage', 15);
+
+            $data = $this->financeService->getViewReglementLivraisonRemise($perPage);
 
             return response()->json([
                 'success' => true,
@@ -46,12 +49,15 @@ class FinanceController extends Controller
 
     /**
      * GET /api/finance/operations-paiements
-     * Récupère le journal global unifié (Livraisons BL et Avoirs AV)
+     * Récupère le journal global unifié (Paginé)
      */
-    public function getOperationPaiement(): JsonResponse
+    public function getOperationPaiement(Request $request): JsonResponse
     {
         try {
-            $data = $this->financeService->getViewOperationPaiement();
+            // Récupère la valeur de 'perPage', par défaut à 15
+            $perPage = $request->query('perPage', 15);
+
+            $data = $this->financeService->getViewOperationPaiement($perPage);
 
             return response()->json([
                 'success' => true,

@@ -9,7 +9,7 @@ use App\Models\ProductStockDetail;
 use App\Models\ProductDetail;
 use App\Models\Production;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class ProductService
 {
@@ -17,7 +17,7 @@ class ProductService
      * 1. VIEW_PRODUCTS
      * Historique global d'UNION (Livraisons, Réceptions, Stock initial).
      */
-    public function getViewProducts(): Collection
+    public function getViewProducts(int $perPage = 15): LengthAwarePaginator
     {
         return ProductMovement::query()
             ->select([
@@ -27,25 +27,25 @@ class ProductService
                 '1 as Type_id',
                 'Livraison as Type_Libelle'
             ])
-            ->get();
+            ->paginate($perPage);
     }
 
     /**
      * 2. VIEW_PRODUCT_AND_ITS_QUANTITY
      * Liste rapide des stocks agrégés par ID produit.
      */
-    public function getViewProductAndItsQuantity(): Collection
+    public function getViewProductAndItsQuantity(int $perPage = 15): LengthAwarePaginator
     {
         return ProductStockQuantity::query()
             ->select(['produit_id', 'quantity'])
-            ->get();
+            ->paginate($perPage);
     }
 
     /**
      * 3. VIEW_PRODUCT_MIN_DETAILS
      * Fiche technique condensée croisée avec les quantités de produits actifs.
      */
-    public function getViewProductMinDetails(): Collection
+    public function getViewProductMinDetails(int $perPage = 15): LengthAwarePaginator
     {
         return ProductMinDetail::query()
             ->from('stock_produit as p')
@@ -63,14 +63,14 @@ class ProductService
                 $join->on('p.PRODUIT_ID', '=', 's.produit_id')->where('p.is_active', '<>', 0);
             })
             ->groupBy('p.PRODUIT_ID')
-            ->get();
+            ->paginate($perPage);
     }
 
     /**
      * 4. VIEW_PRODUCT_STOCK_DETAILS
      * Vérification de stock physique vs indicateur de fabrication.
      */
-    public function getViewProductStockDetails(): Collection
+    public function getViewProductStockDetails(int $perPage = 15): LengthAwarePaginator
     {
         return ProductStockDetail::query()
             ->from('stock_produit as p')
@@ -80,14 +80,14 @@ class ProductService
             ])
             ->leftJoin('stock as s', 's.PRODUIT_ID', '=', 'p.PRODUIT_ID')
             ->groupBy('p.PRODUIT_ID')
-            ->get();
+            ->paginate($perPage);
     }
 
     /**
      * 5. VIEW_PRODUIT
      * Fiche produit exhaustive (33 colonnes) avec sous-requête de calcul de quantité.
      */
-    public function getViewProduit(): Collection
+    public function getViewProduit(int $perPage = 15): LengthAwarePaginator
     {
         return ProductDetail::query()
             ->from('stock_produit as p')
@@ -102,16 +102,16 @@ class ProductService
                 'p.shop_last_price', 'p.POID',
                 DB::raw('(SELECT SUM(s.QUANTITE) FROM stock s WHERE p.PRODUIT_ID = s.PRODUIT_ID) AS Quantity')
             ])
-            ->get();
+            ->paginate($perPage);
     }
 
     /**
      * 6. VIEW_PRODUIT_DTO
      * Modèle de transfert aplati joignant Unités, Catégories et Familles.
      */
-    public function getViewProduitDto(): Collection
+    public function getViewProduitDto(int $perPage = 15): LengthAwarePaginator
     {
-        return ProductDetail::query() // Utilisation réutilisable du query builder
+        return ProductDetail::query()
             ->from('stock_produit as s')
             ->select([
                 's.PRODUIT_ID', 's.BAR_CODE', 's.REFERENCE', 's.NOM1', 's.NOM2', 's.NOM3',
@@ -127,14 +127,14 @@ class ProductService
             ->join('unite as u', 'u.UNITE_ID', '=', 's.UNITE_ID')
             ->join('stock_produits_categorie as c', 's.CATEGORIE_ID', '=', 'c.CATEGORIE_ID')
             ->leftJoin('stock_produits_categorie_famille as fa', 's.FAMILLE_ID', '=', 'fa.ID')
-            ->get();
+            ->paginate($perPage);
     }
 
     /**
      * 7. VIEW_PROD_PRODUCTIONS
      * Suivi de la chaîne de production/fabrication usine avec intervenants.
      */
-    public function getViewProductions(): Collection
+    public function getViewProductions(int $perPage = 15): LengthAwarePaginator
     {
         return Production::query()
             ->from('prod_productions as p')
@@ -149,6 +149,6 @@ class ProductService
             ])
             ->join('users as u', 'u.USER_ID', '=', 'p.user_id')
             ->leftJoin('achat_fournisseur as f', 'f.FOURNISSEUR_ID', '=', 'p.vendor_id')
-            ->get();
+            ->paginate($perPage);
     }
 }

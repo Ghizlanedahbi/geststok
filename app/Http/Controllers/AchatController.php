@@ -4,121 +4,104 @@ namespace App\Http\Controllers;
 
 use App\Services\AchatService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Exception;
 
 class AchatController extends Controller
 {
-    /**
-     * Le service contenant la logique métier des requêtes.
-     *
-     * @var AchatService
-     */
     protected $achatService;
 
-    /**
-     * Injection automatique du service AchatService.
-     *
-     * @param AchatService $achatService
-     */
     public function __construct(AchatService $achatService)
     {
         $this->achatService = $achatService;
     }
 
-    /**
-     * Récupérer la liste des fournisseurs (Vue: view_achat_fournisseur)
-     *
-     * @return JsonResponse
-     */
-    public function indexViewFournisseurs(): JsonResponse
+    public function indexViewFournisseurs(Request $request): JsonResponse
     {
-        $fournisseurs = $this->achatService->getViewFournisseurs();
-
-        return response()->json($fournisseurs);
+        try {
+            $perPage = $request->query('perPage', 15);
+            $fournisseurs = $this->achatService->getViewFournisseurs($perPage);
+            return response()->json(['success' => true, 'data' => $fournisseurs], 200);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
 
-    /**
-     * Récupérer la vue du journal fournisseur (Vue: view_achat_journal_fournisseur)
-     *
-     * @return JsonResponse
-     */
-    public function indexViewJournalFournisseur(): JsonResponse
+    public function indexViewJournalFournisseur(Request $request): JsonResponse
     {
-        $journal = $this->achatService->getViewJournalFournisseur();
-
-        return response()->json($journal);
+        try {
+            $perPage = $request->query('perPage', 15);
+            $journal = $this->achatService->getViewJournalFournisseur($perPage);
+            return response()->json(['success' => true, 'data' => $journal], 200);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
 
-    /**
-     * Récupérer la vue des opérations d'achat (Vue: view_achat_operation)
-     *
-     * @return JsonResponse
-     */
-    public function indexViewAchatOperation(): JsonResponse
+    public function indexViewAchatOperation(Request $request): JsonResponse
     {
-        $operations = $this->achatService->getViewAchatOperation();
-
-        return response()->json($operations);
+        try {
+            $perPage = $request->query('perPage', 15);
+            $operations = $this->achatService->getViewAchatOperation($perPage);
+            return response()->json(['success' => true, 'data' => $operations], 200);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
 
-    /**
-     * Récupérer la vue des réceptions d'achat (Vue: view_achat_reception)
-     *
-     * @return JsonResponse
-     */
-    public function indexViewAchatReception(): JsonResponse
+    public function indexViewAchatReception(Request $request): JsonResponse
     {
-        $receptions = $this->achatService->getViewAchatReception();
-
-        return response()->json($receptions);
+        try {
+            $perPage = $request->query('perPage', 15);
+            $receptions = $this->achatService->getViewAchatReception($perPage);
+            return response()->json(['success' => true, 'data' => $receptions], 200);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
 
-    /**
-     * Récupérer la vue des réceptions pour paiement (Vue: view_achat_reception_4_paiement)
-     *
-     * @return JsonResponse
-     */
-    public function indexViewAchatReception4Paiement(): JsonResponse
+    public function indexViewAchatReception4Paiement(Request $request): JsonResponse
     {
-        $receptionsPaiement = $this->achatService->getViewAchatReception4Paiement();
-
-        return response()->json($receptionsPaiement);
+        try {
+            $perPage = $request->query('perPage', 15);
+            $receptionsPaiement = $this->achatService->getViewAchatReception4Paiement($perPage);
+            return response()->json(['success' => true, 'data' => $receptionsPaiement], 200);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
 
-    /**
-     * Récupérer la vue des règlements fournisseurs (Vue: view_achat_reglement_fournisseur)
-     *
-     * @return JsonResponse
-     */
-    public function indexViewAchatReglementFournisseur(): JsonResponse
+    public function indexViewAchatReglementFournisseur(Request $request): JsonResponse
     {
-        $reglements = $this->achatService->getViewAchatReglementFournisseur();
-
-        return response()->json($reglements);
+        try {
+            $perPage = $request->query('perPage', 15);
+            $reglements = $this->achatService->getViewAchatReglementFournisseur($perPage);
+            return response()->json(['success' => true, 'data' => $reglements], 200);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
 
-    /**
-     * Récupérer la vue de l'analyse des articles (Vue: view_articleanalysis)
-     *
-     * @return JsonResponse
-     */
-    public function indexViewArticleAnalysis(): JsonResponse
+    public function indexViewArticleAnalysis(Request $request): JsonResponse
     {
-        $analysis = $this->achatService->getViewArticleAnalysis();
-
-        return response()->json($analysis);
+        try {
+            $perPage = $request->query('perPage', 15);
+            $analysis = $this->achatService->getViewArticleAnalysis($perPage);
+            return response()->json(['success' => true, 'data' => $analysis], 200);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
 
-    /**
-     * Récupérer la vue des lignes de vente (Vue: view_sales_lines)
-     *
-     * @return JsonResponse
-     */
-    public function indexViewReceptionAvoir(): JsonResponse
+    public function indexViewReceptionAvoir(Request $request): JsonResponse
     {
-        $receptionAvoirs = $this->achatService->getViewReceptionAvoir();
-
-        return response()->json($receptionAvoirs);
+        try {
+            $perPage = $request->query('perPage', 15);
+            $receptionAvoirs = $this->achatService->getViewReceptionAvoir($perPage);
+            return response()->json(['success' => true, 'data' => $receptionAvoirs], 200);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
-
 }

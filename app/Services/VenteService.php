@@ -16,6 +16,7 @@ use App\Models\VenteReglementsClient;
 use App\Models\VenteReglementLivraison;
 use App\Models\VenteAvoirLigne;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class VenteService
 {
@@ -24,7 +25,7 @@ class VenteService
     | 1. VIEW_VENTE
     |--------------------------------------------------------------------------
     */
-    public function getViewVente()
+    public function getViewVente(int $perPage = 15): LengthAwarePaginator
     {
         $avoirs = VenteAvoir::query()
             ->from('vente_avoir')
@@ -78,7 +79,7 @@ class VenteService
                 'v.TatalMargin as TotalMargin',
             ])
             ->unionAll($avoirs)
-            ->get();
+            ->paginate($perPage);
     }
 
     /*
@@ -86,7 +87,7 @@ class VenteService
     | 2. VIEW_VENTE_AVOIR
     |--------------------------------------------------------------------------
     */
-    public function getViewVenteAvoir()
+    public function getViewVenteAvoir(int $perPage = 15): LengthAwarePaginator
     {
         return VenteAvoir::query()
             ->from('vente_avoir as v')
@@ -135,7 +136,7 @@ class VenteService
                 'v.employee_id', 'v.TotalMargin', 'v.TauxMargin', 'j.CREDIT',
                 'u.NOM', 'd.DEPOT_LIBELE', 'v.CLIENT_CODE', 'v.CLIENT_NAME'
             ])
-            ->get();
+            ->paginate($perPage);
     }
 
     /*
@@ -143,7 +144,7 @@ class VenteService
     | 3. VIEW_VENTE_AVOIROLD
     |--------------------------------------------------------------------------
     */
-    public function getViewVenteAvoirOld()
+    public function getViewVenteAvoirOld(int $perPage = 15): LengthAwarePaginator
     {
         return VenteAvoir::query()
             ->from('vente_avoir as a')
@@ -176,7 +177,7 @@ class VenteService
             ->join('vente_client as c', 'a.CLIENT_ID', '=', 'c.CLIENT_ID')
             ->join('stock_depot as d', 'd.DEPOT_ID', '=', 'a.DEPOT_ID')
             ->leftJoin('users as u', 'u.USER_ID', '=', 'a.employee_id')
-            ->get();
+            ->paginate($perPage);
     }
 
     /*
@@ -184,7 +185,7 @@ class VenteService
     | 4. VIEW_VENTE_CLIENT
     |--------------------------------------------------------------------------
     */
-    public function getViewVenteClient()
+    public function getViewVenteClient(int $perPage = 15): LengthAwarePaginator
     {
         return VenteClient::query()
             ->from('vente_client as c')
@@ -197,7 +198,7 @@ class VenteService
                 DB::raw('ct.CLIENT_CATEGORIE_LIBELE as CLIENT_CATEGORIE_LIBELE'),
             ])
             ->leftJoin('vente_client_categorie as ct', 'c.CLIENT_CATEGORIE_ID', '=', 'ct.CLIENT_CATEGORIE_ID')
-            ->get();
+            ->paginate($perPage);
     }
 
     /*
@@ -205,7 +206,7 @@ class VenteService
     | 5. VIEW_VENTE_CREDIT_BON_ACHAT
     |--------------------------------------------------------------------------
     */
-    public function getViewVenteCreditBonAchat()
+    public function getViewVenteCreditBonAchat(int $perPage = 15): LengthAwarePaginator
     {
         return VenteCreditBonAchat::query()
             ->from('vente_credit_bon_achat as b')
@@ -219,7 +220,7 @@ class VenteService
             ])
             ->join('users as u', 'u.USER_ID', '=', 'b.USER_ID')
             ->join('vente_client as c', 'c.CLIENT_ID', '=', 'b.CLIENT_ID')
-            ->get();
+            ->paginate($perPage);
     }
 
     /*
@@ -227,7 +228,7 @@ class VenteService
     | 6. VIEW_VENTE_CREDIT_CLIENT
     |--------------------------------------------------------------------------
     */
-    public function getViewVenteCreditClient()
+    public function getViewVenteCreditClient(int $perPage = 15): LengthAwarePaginator
     {
         return VenteCreditClient::query()
             ->from('vente_credit_client as r')
@@ -253,7 +254,7 @@ class VenteService
             ->leftJoin('modes_paiement as p', 'r.mode_paeiment', '=', 'p.MODE_PAIMENT_ID')
             ->leftJoin('param_banque as b', 'r.bank_id', '=', 'b.id')
             ->leftJoin('users as u', 'r.user_id', '=', 'u.USER_ID')
-            ->get();
+            ->paginate($perPage);
     }
 
     /*
@@ -261,7 +262,7 @@ class VenteService
     | 7. VIEW_VENTE_FACTURE
     |--------------------------------------------------------------------------
     */
-    public function getViewVenteFacture()
+    public function getViewVenteFacture(int $perPage = 15): LengthAwarePaginator
     {
         return VenteFacture::query()
             ->from('vente_facture as f')
@@ -279,7 +280,7 @@ class VenteService
                 'f.AlreadyDelevred', 'f.Type',
             ])
             ->leftJoin('modes_paiement as m', 'm.MODE_PAIMENT_ID', '=', 'f.MODE_PAIMENT_ID')
-            ->get();
+            ->paginate($perPage);
     }
 
     /*
@@ -287,7 +288,7 @@ class VenteService
     | 8. VIEW_VENTE_JCLIENT
     |--------------------------------------------------------------------------
     */
-    public function getViewVenteJClient()
+    public function getViewVenteJClient(int $perPage = 15): LengthAwarePaginator
     {
         return VenteJClient::query()
             ->from('vente_jclient as j')
@@ -308,7 +309,7 @@ class VenteService
             ->leftJoin('modes_paiement as m', 'm.MODE_PAIMENT_ID', '=', 'j.mode_paiement_id')
             ->leftJoin('users as u', 'j.user_id', '=', 'u.USER_ID')
             ->leftJoin('param_banque as b', 'b.id', '=', 'j.bank_id')
-            ->get();
+            ->paginate($perPage);
     }
 
     /*
@@ -316,7 +317,7 @@ class VenteService
     | 9. VIEW_VENTE_LIVRAISON
     |--------------------------------------------------------------------------
     */
-    public function getViewVenteLivraison()
+    public function getViewVenteLivraison(int $perPage = 15): LengthAwarePaginator
     {
         return VenteLivraison::query()
             ->from('vente_livraison as v')
@@ -365,7 +366,7 @@ class VenteService
                 'u.NOM', 'v.CLIENT_ID', 'v.EmployeeId', 'v.FactureId', 'f.VALIDATION', 'v.TauxMargin',
                 'v.AVOIR_COMPLET_REF', 'v.Type', 'f.REFERENCE', 'j.DEBUT', 'j.Rebat'
             ])
-            ->get();
+            ->paginate($perPage);
     }
 
     /*
@@ -373,7 +374,7 @@ class VenteService
     | 10. VIEW_VENTE_LIVRAISON2
     |--------------------------------------------------------------------------
     */
-    public function getViewVenteLivraison2()
+    public function getViewVenteLivraison2(int $perPage = 15): LengthAwarePaginator
     {
         return VenteLivraison::query()
             ->from('vente_livraison as v')
@@ -400,7 +401,7 @@ class VenteService
             ->join('vente_client as c', 'v.CLIENT_ID', '=', 'c.CLIENT_ID')
             ->join('stock_depot as d', 'v.DEPOT_ID', '=', 'd.DEPOT_ID')
             ->join('users as u', 'v.EmployeeId', '=', 'u.USER_ID')
-            ->get();
+            ->paginate($perPage);
     }
 
     /*
@@ -408,7 +409,7 @@ class VenteService
     | 11. VIEW_VENTE_LIVRAISON_LIGNE
     |--------------------------------------------------------------------------
     */
-    public function getViewVenteLivraisonLigne()
+    public function getViewVenteLivraisonLigne(int $perPage = 15): LengthAwarePaginator
     {
         return VenteLivraisonLigne::query()
             ->from('vente_livraison_ligne as l')
@@ -431,7 +432,7 @@ class VenteService
                                    ->whereColumn('o.LIVRAISON_ID', 'l.LIVRAISON_ID');
                       });
             })
-            ->get();
+            ->paginate($perPage);
     }
 
     /*
@@ -439,7 +440,7 @@ class VenteService
     | 12. VIEW_VENTE_ORDER_OUTPUT
     |--------------------------------------------------------------------------
     */
-    public function getViewVenteOrderOutput()
+    public function getViewVenteOrderOutput(int $perPage = 15): LengthAwarePaginator
     {
         return VenteOrderOutput::query()
             ->from('vente_order_output as o')
@@ -465,7 +466,7 @@ class VenteService
                 $join->on('l.LIVRAISON_ID', '=', 'o.LIVRAISON_ID')
                      ->where('l.VALIDATION', '<>', 0);
             })
-            ->get();
+            ->paginate($perPage);
     }
 
     /*
@@ -473,7 +474,7 @@ class VenteService
     | 13. VIEW_VENTE_ORDER_OUTPUT_ALL
     |--------------------------------------------------------------------------
     */
-    public function getViewVenteOrderOutputAll()
+    public function getViewVenteOrderOutputAll(int $perPage = 15): LengthAwarePaginator
     {
         return VenteOrderOutputLigne::query()
             ->from('vente_order_output_ligne as ol')
@@ -491,7 +492,7 @@ class VenteService
                 'o.CLIENT_ID', 'o.MONTANT_TOTAL', 'o.TotalRemise', 'o.DELEVERED',
             ])
             ->join('vente_order_output as o', 'ol.OUTPUT_ID', '=', 'o.ID')
-            ->get();
+            ->paginate($perPage);
     }
 
     /*
@@ -499,7 +500,7 @@ class VenteService
     | 14. VIEW_VENTE_ORDER_OUTPUT_NONE_DELIVERED
     |--------------------------------------------------------------------------
     */
-    public function getViewVenteOrderOutputNoneDelivered()
+    public function getViewVenteOrderOutputNoneDelivered(int $perPage = 15): LengthAwarePaginator
     {
         return VenteOrderOutputLigne::query()
             ->from('vente_order_output_ligne as ol')
@@ -515,7 +516,7 @@ class VenteService
             ])
             ->join('vente_order_output as o', 'ol.OUTPUT_ID', '=', 'o.ID')
             ->whereNull('o.LIVRAISON_ID')
-            ->get();
+            ->paginate($perPage);
     }
 
     /*
@@ -523,7 +524,7 @@ class VenteService
     | 15. VIEW_VENTE_REGLEMENTS_CLIENT
     |--------------------------------------------------------------------------
     */
-    public function getViewVenteReglementsClient()
+    public function getViewVenteReglementsClient(int $perPage = 15): LengthAwarePaginator
     {
         return VenteReglementsClient::query()
             ->from('vente_reglements_client as r')
@@ -553,7 +554,7 @@ class VenteService
             ->join('modes_paiement as p', 'r.MODE_DE_PAIMENT_ID', '=', 'p.MODE_PAIMENT_ID')
             ->leftJoin('users as u', 'r.user_id', '=', 'u.USER_ID')
             ->leftJoin('param_banque as b', 'r.banque_id', '=', 'b.id')
-            ->get();
+            ->paginate($perPage);
     }
 
     /*
@@ -561,7 +562,7 @@ class VenteService
     | 16. VIEW_VENTE_VALIDE_REGLEMENT_LIVRAISON
     |--------------------------------------------------------------------------
     */
-    public function getViewVenteValideReglementLivraison()
+    public function getViewVenteValideReglementLivraison(int $perPage = 15): LengthAwarePaginator
     {
         return VenteReglementLivraison::query()
             ->from('vente_reglement_livraison as l')
@@ -576,14 +577,15 @@ class VenteService
             ->where('r.VALIDATION', '<>', 0)
             ->where('lv.VALIDATION', '<>', 0)
             ->groupBy(['l.livraison_id', 'l.reglement_id', 'l.montant'])
-            ->get();
+            ->paginate($perPage);
     }
+
     /*
     |--------------------------------------------------------------------------
     | 17. VIEW_SALES_LINES
     |--------------------------------------------------------------------------
     */
-    public function getViewSalesLines()
+    public function getViewSalesLines(int $perPage = 15): LengthAwarePaginator
     {
         // Union 1 : Livraisons
         $livraisons = VenteLivraisonLigne::query()
@@ -616,36 +618,35 @@ class VenteService
             });
 
         // Union 2 : Avoirs
-
-$avoirs = VenteAvoirLigne::query()
-->from('vente_avoir_ligne as ll')
-->select([
-    DB::raw("'Avoir' as Operation"),
-    'll.ID',
-    'll.AVOIR_ID as N°',
-    'l.CLIENT_ID',
-    'll.PRODUIT_ID as Produit_id',
-    'll.PRODUIT_REFERENCE as Reference_Produit',
-    'll.DESIGNATION as Designation',
-    'll.Couleur as Couleur',
-    's.shop_avg_price as ShopPriceAvg',
-    'l.INS_DATE as INS_DATE',
-    'l.UPD_DATE as UPD_DATE',
-    'l.AVOIR_DATE as LIVRAISON_DATE',
-    'l.VALIDATION_DATE as Date_validation',
-    'll.QUANTITE as Quantité',
-    'll.FREE_QUANTITY as FREE_QUANTITY',
-    'll.TAUX_TVA as TVA',
-    'll.REMISE as Remise',
-    'll.PRIX_UNITAIRE as Prix_de_vente',
-    'll.PRIX_ACHAT as Prix_achat',
-    'll.Margin as Marge'
-])
-->join('vente_avoir as l', function ($join) {
-    $join->on('ll.AVOIR_ID', '=', 'l.AVROIR_ID')
-         ->where('l.VALIDATION', '=', '1');
-})
-->join('stock_produit as s', 's.PRODUIT_ID', '=', 'll.PRODUIT_ID');
+        $avoirs = VenteAvoirLigne::query()
+            ->from('vente_avoir_ligne as ll')
+            ->select([
+                DB::raw("'Avoir' as Operation"),
+                'll.ID',
+                'll.AVOIR_ID as N°',
+                'l.CLIENT_ID',
+                'll.PRODUIT_ID as Produit_id',
+                'll.PRODUIT_REFERENCE as Reference_Produit',
+                'll.DESIGNATION as Designation',
+                'll.Couleur as Couleur',
+                's.shop_avg_price as ShopPriceAvg',
+                'l.INS_DATE as INS_DATE',
+                'l.UPD_DATE as UPD_DATE',
+                'l.AVOIR_DATE as LIVRAISON_DATE',
+                'l.VALIDATION_DATE as Date_validation',
+                'll.QUANTITE as Quantité',
+                'll.FREE_QUANTITY as FREE_QUANTITY',
+                'll.TAUX_TVA as TVA',
+                'll.REMISE as Remise',
+                'll.PRIX_UNITAIRE as Prix_de_vente',
+                'll.PRIX_ACHAT as Prix_achat',
+                'll.Margin as Marge'
+            ])
+            ->join('vente_avoir as l', function ($join) {
+                $join->on('ll.AVOIR_ID', '=', 'l.AVROIR_ID')
+                     ->where('l.VALIDATION', '=', '1');
+            })
+            ->join('stock_produit as s', 's.PRODUIT_ID', '=', 'll.PRODUIT_ID');
 
         // Union principal lancé depuis les Sorties non livrées
         return VenteOrderOutputLigne::query()
@@ -674,7 +675,7 @@ $avoirs = VenteAvoirLigne::query()
             ])
             ->union($livraisons)
             ->union($avoirs)
-            ->get();
+            ->paginate($perPage);
     }
 
     /*
@@ -726,9 +727,9 @@ $avoirs = VenteAvoirLigne::query()
             ->union($avoirs);
     }
 
-    public function getViewSalesOperation()
+    public function getViewSalesOperation(int $perPage = 15): LengthAwarePaginator
     {
-        return $this->getViewSalesOperationBuilder()->get();
+        return $this->getViewSalesOperationBuilder()->paginate($perPage);
     }
 
     /*
@@ -736,11 +737,11 @@ $avoirs = VenteAvoirLigne::query()
     | 19. VIEW_SALES_OPERATION_FACTURE
     |--------------------------------------------------------------------------
     */
-    public function getViewSalesOperationFacture()
+    public function getViewSalesOperationFacture(int $perPage = 15): LengthAwarePaginator
     {
         $subQuery = $this->getViewSalesOperationBuilder();
 
-        return VenteLivraison::query() // Modèle de base neutre pour exécuter le SELECT sur la sous-requête
+        return VenteLivraison::query()
             ->from(DB::raw("({$subQuery->toSql()}) as o"))
             ->mergeBindings($subQuery->getQuery())
             ->select([
@@ -773,6 +774,6 @@ $avoirs = VenteAvoirLigne::query()
             ->join('vente_client as c', 'c.CLIENT_ID', '=', 'o.CLIENT_ID')
             ->join('stock_depot as d', 'd.DEPOT_ID', '=', 'o.DEPOT_ID')
             ->leftJoin('users as u', 'u.USER_ID', '=', 'o.EmployeeId')
-            ->get();
+            ->paginate($perPage);
     }
 }

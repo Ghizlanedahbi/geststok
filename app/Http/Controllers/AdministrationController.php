@@ -21,12 +21,16 @@ class AdministrationController extends Controller
     }
 
     /**
-     * Récupère la liste détaillée des charges (Remplace view_charges)
+     * Récupère la liste détaillée des charges (Paginée)
      */
-    public function getCharges(): JsonResponse
+    public function getCharges(Request $request): JsonResponse
     {
         try {
-            $charges = $this->adminService->getViewCharges();
+            // Récupère la valeur de 'perPage', par défaut à 15 si absente
+            $perPage = $request->query('perPage', 15);
+            
+            $charges = $this->adminService->getViewCharges($perPage);
+            
             return response()->json([
                 'success' => true,
                 'data'    => $charges
@@ -41,12 +45,16 @@ class AdministrationController extends Controller
     }
 
     /**
-     * Récupère la liste des utilisateurs (Remplace view_users)
+     * Récupère la liste des utilisateurs (Paginée)
      */
-    public function getUsers(): JsonResponse
+    public function getUsers(Request $request): JsonResponse
     {
         try {
-            $users = $this->adminService->getViewUsers();
+            // Récupère la valeur de 'perPage', par défaut à 15 si absente
+            $perPage = $request->query('perPage', 15);
+            
+            $users = $this->adminService->getViewUsers($perPage);
+            
             return response()->json([
                 'success' => true,
                 'data'    => $users

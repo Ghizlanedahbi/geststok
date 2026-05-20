@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Services\ProductService;
 use Illuminate\Http\JsonResponse;
-
+use Illuminate\Http\Request;
+use Exception;
 
 class ProductController extends Controller
 {
@@ -16,45 +17,106 @@ class ProductController extends Controller
         $this->productService = $productService;
     }
 
-    /** Mouvements d'UNION */
-    public function indexMovements(): JsonResponse
+    /**
+     * Méthode interne pour structurer uniformément la réponse JSON paginée
+     */
+    private function paginatedResponse($paginator): JsonResponse
     {
-        return response()->json($this->productService->getViewProducts());
+        return response()->json([
+            'success'    => true,
+            'data'       => $paginator->items(),
+            'pagination' => [
+                'total'         => $paginator->total(),
+                'per_page'      => $paginator->perPage(),
+                'current_page'  => $paginator->currentPage(),
+                'last_page'     => $paginator->lastPage(),
+                'next_page_url' => $paginator->nextPageUrl(),
+                'prev_page_url' => $paginator->previousPageUrl(),
+            ]
+        ], 200);
+    }
+
+    /** Mouvements d'UNION */
+    public function indexMovements(Request $request): JsonResponse
+    {
+        try {
+            $perPage = $request->query('perPage', 15);
+            $paginator = $this->productService->getViewProducts((int)$perPage);
+            return $this->paginatedResponse($paginator);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
     }
 
     /** Quantités groupées simples */
-    public function indexQuantities(): JsonResponse
+    public function indexQuantities(Request $request): JsonResponse
     {
-        return response()->json($this->productService->getViewProductAndItsQuantity());
+        try {
+            $perPage = $request->query('perPage', 15);
+            $paginator = $this->productService->getViewProductAndItsQuantity((int)$perPage);
+            return $this->paginatedResponse($paginator);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
     }
 
     /** Fiches techniques minimales */
-    public function indexMinDetails(): JsonResponse
+    public function indexMinDetails(Request $request): JsonResponse
     {
-        return response()->json($this->productService->getViewProductMinDetails());
+        try {
+            $perPage = $request->query('perPage', 15);
+            $paginator = $this->productService->getViewProductMinDetails((int)$perPage);
+            return $this->paginatedResponse($paginator);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
     }
 
     /** Détails stocks physiques */
-    public function indexStockDetails(): JsonResponse
+    public function indexStockDetails(Request $request): JsonResponse
     {
-        return response()->json($this->productService->getViewProductStockDetails());
+        try {
+            $perPage = $request->query('perPage', 15);
+            $paginator = $this->productService->getViewProductStockDetails((int)$perPage);
+            return $this->paginatedResponse($paginator);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
     }
 
     /** Catalogue brut complet (33 colonnes) */
-    public function indexFullDetails(): JsonResponse
+    public function indexFullDetails(Request $request): JsonResponse
     {
-        return response()->json($this->productService->getViewProduit());
+        try {
+            $perPage = $request->query('perPage', 15);
+            $paginator = $this->productService->getViewProduit((int)$perPage);
+            return $this->paginatedResponse($paginator);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
     }
 
     /** DTO (Relations aplaties avec libellés) */
-    public function indexDtoDetails(): JsonResponse
+    public function indexDtoDetails(Request $request): JsonResponse
     {
-        return response()->json($this->productService->getViewProduitDto());
+        try {
+            $perPage = $request->query('perPage', 15);
+            $paginator = $this->productService->getViewProduitDto((int)$perPage);
+            return $this->paginatedResponse($paginator);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
     }
 
     /** Suivi de fabrication / Usine */
-    public function indexProductions(): JsonResponse
+    public function indexProductions(Request $request): JsonResponse
     {
-        return response()->json($this->productService->getViewProductions());
+        try {
+            $perPage = $request->query('perPage', 15);
+            $paginator = $this->productService->getViewProductions((int)$perPage);
+            return $this->paginatedResponse($paginator);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
     }
 }
